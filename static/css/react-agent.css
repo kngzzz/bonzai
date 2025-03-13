@@ -1,0 +1,303 @@
+/**
+ * ReAct Agent Chat - Custom Styles
+ * Enhanced UI/UX for the ReAct Agent Chat interface
+ */
+
+/* Base Styles */
+:root {
+  --primary-50: #f0f9ff;
+  --primary-100: #e0f2fe;
+  --primary-500: #0ea5e9;
+  --primary-700: #0369a1;
+  --secondary-50: #f5f3ff;
+  --secondary-100: #ede9fe;
+  --secondary-500: #8b5cf6;
+  --secondary-700: #6d28d9;
+  --accent-amber: #f59e0b;
+  --accent-success: #10b981;
+  --accent-error: #ef4444;
+  --accent-warning: #f97316;
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-500: #737373;
+  --neutral-700: #404040;
+  --neutral-900: #171717;
+}
+
+/* Enhanced Animations */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(139, 92, 246, 0);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+  }
+}
+
+/* Enhanced Message Styling */
+.message {
+  transition: transform 0.2s ease-out;
+}
+
+.message:hover {
+  transform: translateY(-2px);
+}
+
+.user-message {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.assistant-message {
+  animation: slideInLeft 0.3s ease-out forwards;
+}
+
+/* Enhanced Thinking Process Visualization */
+.thinking-entry {
+  transition: all 0.2s ease-out;
+}
+
+.thinking-entry:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.thinking-header {
+  transition: background-color 0.2s ease;
+}
+
+.thinking-header:hover {
+  background-color: var(--secondary-50);
+}
+
+/* Timeline Enhancements */
+.timeline-track {
+  transition: height 0.3s ease;
+}
+
+.timeline-track:hover {
+  height: 4px;
+}
+
+.timeline-marker {
+  transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+.timeline-marker:hover {
+  transform: translateX(-50%) scale(1.5);
+  z-index: 10;
+}
+
+/* Command Input Enhancements */
+#message-input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#message-input:focus {
+  animation: pulseGlow 2s infinite;
+}
+
+.quick-action {
+  transition: all 0.2s ease;
+}
+
+.quick-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Status Indicator Enhancements */
+#status-indicator {
+  transition: transform 0.2s ease;
+}
+
+#status-indicator:hover {
+  transform: scale(1.05);
+}
+
+/* Header Enhancements */
+header {
+  background-image: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+  .message {
+    max-width: 85% !important;
+  }
+  
+  header h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Dark Mode Support (if implemented in the future) */
+@media (prefers-color-scheme: dark) {
+  .dark-mode-ready {
+    /* Dark mode styles would go here */
+  }
+}
+
+/* Accessibility Enhancements */
+:focus {
+  outline: 2px solid var(--secondary-500);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Button Enhancements */
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+button:active::after {
+  opacity: 0.4;
+  transform: scale(50, 50) translate(-50%, -50%);
+  transition: transform 0.5s, opacity 1s;
+}
+
+/* Enhanced Code Block Styling */
+.code-block {
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.code-block:hover {
+  transform: scale(1.01);
+}
+
+.code-block::before {
+  content: attr(class);
+  content: attr(class);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border-bottom-left-radius: 0.375rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.code-block:hover::before {
+  opacity: 1;
+}
+
+/* Enhanced Scrollbar */
+::-webkit-scrollbar-thumb {
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--secondary-500);
+}
+
+/* Message Content Enhancements */
+.message-content a {
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.message-content a::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--secondary-700);
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease;
+}
+
+.message-content a:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Settings Button Animation */
+#settings-button {
+  transition: transform 0.3s ease;
+}
+
+#settings-button:hover {
+  transform: rotate(90deg);
+}
+
+/* Collapse/Expand Buttons */
+#collapse-all, #expand-all {
+  transition: all 0.2s ease;
+}
+
+#collapse-all:hover, #expand-all:hover {
+  background-color: var(--secondary-100);
+  color: var(--secondary-700);
+}

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ReAct Agent Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <!-- Custom markdown parser -->
+    <script src="/static/js/markdown-lite.js"></script>
+    <!-- Custom CSS -->
+    <link href="/static/css/react-agent.css" rel="stylesheet" />
+    <!-- Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        },
+                        secondary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                            950: '#2e1065',
+                        },
+                        accent: {
+                            amber: '#f59e0b',
+                            success: '#10b981',
+                            error: '#ef4444',
+                            warning: '#f97316',
+                        },
+                        neutral: {
+                            50: '#fafafa',
+                            100: '#f5f5f5',
+                            200: '#e5e5e5',
+                            300: '#d4d4d4',
+                            400: '#a3a3a3',
+                            500: '#737373',
+                            600: '#525252',
+                            700: '#404040',
+                            800: '#262626',
+                            900: '#171717',
+                            950: '#0a0a0a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    backgroundImage: {
+                        'neural-gradient': 'linear-gradient(to right, #0ea5e9, #8b5cf6)',
+                    },
+                },
+            },
+        }
+    </script>
+    <!-- Custom styles -->
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c4b5fd;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a78bfa;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        /* Code block styling */
+        .code-block {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            position: relative;
+        }
+        
+        .inline-code {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 0.25rem;
+            padding: 0.125rem 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875em;
+            color: #6d28d9;
+        }
+        
+        /* Message content styling */
+        .message-content p {
+            margin-bottom: 0.75rem;
+        }
+        
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Timeline styling */
+        .timeline-track {
+            height: 2px;
+            background-color: #e5e5e5;
+            position: relative;
+        }
+        
+        .timeline-marker {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #8b5cf6;
+            position: absolute;
+            top: -5px;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body class="bg-neutral-100 font-sans text-neutral-900">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-neural-gradient text-white py-4 px-6 shadow-md">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">ReAct Agent Chat</h1>
+                <div class="flex items-center space-x-4">
+                    <div id="status-indicator" class="flex items-center">
+                        <span id="status-dot" class="h-3 w-3 rounded-full bg-neutral-300 mr-2"></span>
+                        <span id="status-text" class="text-sm font-medium">Disconnected</span>
+                    </div>
+                    <button id="settings-button" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="flex-1 container mx-auto p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6">
+            <!-- Left panel: Chat messages -->
+            <section class="flex-1 flex flex-col bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 border-b border-neutral-200">
+                    <h2 class="text-lg font-semibold text-neutral-800">Conversation</h2>
+                </div>
+                <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <!-- Messages will be inserted here -->
+                    <div class="system-message text-center text-neutral-500 text-sm italic py-2">
+                        Ready to connect
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right panel: Agent thinking process -->
+            <section class="w-full md:w-2/5 flex flex-col bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 border-b border-neutral-200 flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-neutral-800">Agent Thinking</h2>
+                    <div class="flex items-center space-x-2">
+                        <button id="collapse-all" class="text-xs px-2 py-1 rounded bg-neutral-100 hover:bg-neutral-200 transition-colors">
+                            Collapse All
+                        </button>
+                        <button id="expand-all" class="text-xs px-2 py-1 rounded bg-neutral-100 hover:bg-neutral-200 transition-colors">
+                            Expand All
+                        </button>
+                    </div>
+                </div>
+                <div id="thinking-process" class="flex-1 overflow-y-auto p-4 space-y-3 bg-neutral-50">
+                    <!-- Thinking process will be inserted here -->
+                    <div class="text-neutral-400 text-sm italic text-center py-8">
+                        Agent thinking process will appear here when active
+                    </div>
+                </div>
+                
+                <!-- Timeline visualization -->
+                <div class="p-4 border-t border-neutral-200 bg-white">
+                    <div class="timeline-container">
+                        <div class="text-xs text-neutral-500 mb-2">Thinking Timeline</div>
+                        <div class="timeline-track">
+                            <!-- Timeline markers will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Command input area -->
+        <footer class="bg-white border-t border-neutral-200 p-4 md:p-6">
+            <div class="container mx-auto">
+                <div class="flex flex-col space-y-2">
+                    <!-- Command palette -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </div>
+                        <input 
+                            type="text" 
+                            id="message-input" 
+                            class="block w-full pl-10 pr-12 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-secondary-300 focus:border-secondary-500 transition-all bg-white shadow-sm"
+                            placeholder="Type your command or question..."
+                        >
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <div class="text-xs text-neutral-400 mr-2 hidden md:block">Press Enter to send</div>
+                            <button id="send-button" class="p-1 rounded-md bg-secondary-500 text-white hover:bg-secondary-600 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick actions -->
+                    <div class="flex flex-wrap gap-2">
+                        <button class="quick-action px-3 py-1 text-sm rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors">
+                            Help me with...
+                        </button>
+                        <button class="quick-action px-3 py-1 text-sm rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors">
+                            Explain your process
+                        </button>
+                        <button class="quick-action px-3 py-1 text-sm rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors">
+                            Pause agent
+                        </button>
+                        <button class="quick-action px-3 py-1 text-sm rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors">
+                            Clear conversation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Global variables
+        let sessionId = null;
+        const messagesDiv = document.getElementById('messages');
+        const thinkingProcessDiv = document.getElementById('thinking-process');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        let eventSource = null;
+        
+        // Initialize the application
+        function init() {
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+            
+            // Quick action buttons
+            document.querySelectorAll('.quick-action').forEach(button => {
+                button.addEventListener('click', () => {
+                    messageInput.value = button.textContent.trim();
+                    messageInput.focus();
+                });
+            });
+            
+            updateStatus('disconnected');
+        }
+        
+        // Update status indicator
+        function updateStatus(status) {
+            switch(status) {
+                case 'connected':
+                    statusDot.className = 'h-3 w-3 rounded-full bg-accent-success mr-2';
+                    statusText.textContent = 'Connected';
+                    break;
+                case 'thinking':
+                    statusDot.className = 'h-3 w-3 rounded-full bg-accent-amber mr-2 animate-pulse';
+                    statusText.textContent = 'Agent Thinking';
+                    break;
+                case 'error':
+                    statusDot.className = 'h-3 w-3 rounded-full bg-accent-error mr-2';
+                    statusText.textContent = 'Connection Error';
+                    break;
+                default:
+                    statusDot.className = 'h-3 w-3 rounded-full bg-neutral-300 mr-2';
+                    statusText.textContent = 'Disconnected';
+            }
+        }
+        
+        // Connect to Server-Sent Events
+        function connectEventSource() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            
+            const url = `/api/stream`;
+            eventSource = new EventSource(url);
+            
+            eventSource.onopen = () => {
+                appendSystemMessage("Connected to server");
+                updateStatus('connected');
+            };
+            
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'connection_established') {
+                    sessionId = data.session_id;
+                    appendSystemMessage(`Session established: ${sessionId}`);
+                } 
+                else if (data.type === 'message') {
+                    appendAssistantMessage(data.content);
+                    updateStatus('connected');
+                    clearThinkingProcess();
+                    eventSource.close();
+                    eventSource = null;
+                }
+                else if (data.type === 'error') {
+                    appendSystemMessage(`Error: ${data.content}`);
+                    updateStatus('error');
+                }
+                else if (data.type === 'status') {
+                    if (data.content === 'thinking') {
+                        updateStatus('thinking');
+                        clearThinkingProcess();
+                    }
+                }
+                else if (data.type === 'log') {
+                    appendThinkingLog(data.content);
+                }
+                else if (data.type === 'history') {
+                    data.messages.forEach(msg => {
+                        if (msg.role === 'user') {
+                            appendUserMessage(msg.content);
+                        } else if (msg.role === 'assistant') {
+                            appendAssistantMessage(msg.content);
+                        }
+                    });
+                }
+            };
+            
+            eventSource.onerror = (error) => {
+                updateStatus('error');
+                eventSource.close();
+                eventSource = null;
+            };
+        }
+        
+        // Send message
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            appendUserMessage(message);
+            updateStatus('thinking');
+            
+            try {
+                connectEventSource();
+                
+                const requestBody = {
+                    message: message,
+                    session_id: sessionId
+                };
+                
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                sessionId = data.session_id;
+            } catch (error) {
+                appendSystemMessage(`Error: ${error.message}`);
+                updateStatus('error');
+                
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+            }
+            
+            messageInput.value = '';
+        }
+        
+        // Append user message
+        function appendUserMessage(message) {
+            const div = document.createElement('div');
+            div.className = 'message user-message fade-in ml-auto max-w-[70%] bg-primary-100 text-primary-900 p-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg shadow-sm';
+            
+            const header = document.createElement('div');
+            header.className = 'flex justify-between items-center mb-1';
+            
+            const role = document.createElement('span');
+            role.className = 'text-xs font-semibold text-primary-600';
+            role.textContent = 'You';
+            
+            const time = document.createElement('span');
+            time.className = 'text-xs text-neutral-500';
+            time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            header.appendChild(role);
+            header.appendChild(time);
+            
+            const content = document.createElement('div');
+            content.className = 'text-sm message-content';
+            content.textContent = message;
+            
+            div.appendChild(header);
+            div.appendChild(content);
+            
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Append assistant message
+        function appendAssistantMessage(message) {
+            const div = document.createElement('div');
+            div.className = 'message assistant-message fade-in mr-auto max-w-[70%] bg-secondary-100 text-neutral-800 p-3 rounded-tl-lg rounded-tr-lg rounded-br-lg shadow-sm';
+            
+            const header = document.createElement('div');
+            header.className = 'flex justify-between items-center mb-1';
+            
+            const role = document.createElement('span');
+            role.className = 'text-xs font-semibold text-secondary-600';
+            role.textContent = 'Agent';
+            
+            const time = document.createElement('span');
+            time.className = 'text-xs text-neutral-500';
+            time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            header.appendChild(role);
+            header.appendChild(time);
+            
+            const content = document.createElement('div');
+            content.className = 'text-sm message-content';
+            
+            // Parse markdown in the message
+            content.innerHTML = MarkdownLite.parse(message);
+            
+            div.appendChild(header);
+            div.appendChild(content);
+            
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Append system message
+        function appendSystemMessage(message) {
+            const div = document.createElement('div');
+            div.className = 'system-message text-center text-neutral-500 text-sm italic py-2 fade-in';
+            div.textContent = message;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Clear thinking process
+        function clearThinkingProcess() {
+            thinkingProcessDiv.innerHTML = '';
+            document.querySelector('.timeline-track').innerHTML = '';
+        }
+        
+        // Append thinking log - handled by thinking-process.js
+        function appendThinkingLog(content) {
+            // This function is now handled by the ThinkingProcessManager
+            if (window.thinkingManager) {
+                window.thinkingManager.appendThinkingLog(content);
+            }
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', init);
+    </script>
+    
+    <!-- Enhanced UI JavaScript -->
+    <script src="/static/js/react-agent.js"></script>
+    <!-- Thinking Process Visualization -->
+    <script src="/static/js/thinking-process.js"></script>
+</body>
+</html>

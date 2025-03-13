@@ -1,0 +1,13 @@
+# Production configuration for hosted ReAct Agent
+
+[llm]
+model = "claude-3-5-sonnet-20240620"  # Use Claude model for production
+base_url = "https://api.anthropic.com/v1/"
+api_key = "${ANTHROPIC_API_KEY}"  # Will be replaced with environment variable
+max_tokens = 4096
+temperature = 0.7
+api_type = "anthropic"
+
+[browser]
+headless = true  # Run browser in headless mode for production
+disable_security = false  # Enable security for production
