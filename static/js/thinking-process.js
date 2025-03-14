@@ -63,33 +63,50 @@ class ThinkingProcessManager {
     }
     
     setupSSEConnection() {
-        // The main SSE connection is already established in the main script
-        // We just need to listen for the 'log' event type and handle it
-        
-        // This is a workaround to hook into the existing SSE connection
-        // We'll override the existing onmessage handler to also handle thinking logs
-        const originalOnMessage = EventSource.prototype.onmessage;
-        
-        EventSource.prototype.onmessage = function(event) {
-            // Call the original handler
-            if (originalOnMessage) {
-                originalOnMessage.call(this, event);
-            }
-            
-            // Our custom handling for thinking logs
+        // Create a global message handler function
+        window.handleThinkingProcessMessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
                 
                 if (data.type === 'log') {
-                    const thinkingManager = window.thinkingManager;
-                    if (thinkingManager) {
-                        thinkingManager.appendThinkingLog(data.content);
+                    // Process thinking logs
+                    if (window.thinkingManager) {
+                        window.thinkingManager.appendThinkingLog(data.content);
                     }
                 }
             } catch (error) {
                 console.error('Error processing SSE message:', error);
             }
         };
+        
+        // Add our handler to any existing EventSource
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait a short time to ensure the main script has created the EventSource
+            setTimeout(() => {
+                // Find any existing EventSource instances
+                if (window.eventSource) {
+                    window.eventSource.addEventListener('message', window.handleThinkingProcessMessage);
+                }
+            }, 500);
+        });
+        
+        // Patch the EventSource constructor to add our handler to any new instances
+        const originalEventSource = window.EventSource;
+        
+        if (originalEventSource) {
+            window.EventSource = function(...args) {
+                const instance = new originalEventSource(...args);
+                
+                // Add our message handler
+                instance.addEventListener('message', window.handleThinkingProcessMessage);
+                
+                return instance;
+            };
+            
+            // Copy prototype and properties
+            window.EventSource.prototype = originalEventSource.prototype;
+            Object.defineProperties(window.EventSource, Object.getOwnPropertyDescriptors(originalEventSource));
+        }
     }
     
     clearThinkingProcess() {
@@ -528,145 +545,6 @@ class ThinkingProcessManager {
         markerContainer.appendChild(marker);
         markerContainer.appendChild(tooltip);
         this.timelineTrack.appendChild(markerContainer);
-        
-        // Add a connecting line if this isn't the first marker
-        if (totalMarkers > 0) {
-            const prevMarker = this.timelineTrack.querySelectorAll('.timeline-marker-container')[totalMarkers - 1];
-            if (prevMarker) {
-                const prevPosition = parseFloat(prevMarker.style.left);
-                const lineWidth = position - prevPosition;
-                
-                if (lineWidth > 0) {
-                    const line = document.createElement('div');
-                    line.className = 'timeline-connector';
-                    line.style.position = 'absolute';
-                    line.style.height = '2px';
-                    line.style.backgroundColor = '#e5e5e5';
-                    line.style.bottom = '5px';
-                    line.style.left = `${prevPosition}%`;
-                    line.style.width = `${lineWidth}%`;
-                    line.style.zIndex = '5';
-                    
-                    this.timelineTrack.appendChild(line);
-                }
-            }
-        }
-        
-        // Store the marker reference in the entry
-        if (entryIndex < this.entries.length) {
-            this.entries[entryIndex].marker = markerContainer;
-        }
-    }
-    
-    // Update the timeline visualization
-    updateTimelineVisualization() {
-        // Clear existing timeline
-        this.timelineTrack.innerHTML = '';
-        
-        // Recreate all markers
-        this.entries.forEach((entry, index) => {
-            const position = index === 0 ? 0 : Math.min(index * 10, 95);
-            const colors = this.stageColors[entry.type] || this.stageColors['Thinking'];
-            
-            // Create marker container
-            const markerContainer = document.createElement('div');
-            markerContainer.className = 'timeline-marker-container';
-            markerContainer.style.position = 'absolute';
-            markerContainer.style.left = `${position}%`;
-            markerContainer.style.bottom = '0';
-            markerContainer.style.transform = 'translateX(-50%)';
-            
-            // Create marker
-            const marker = document.createElement('div');
-            marker.className = 'timeline-marker';
-            marker.style.width = '12px';
-            marker.style.height = '12px';
-            marker.style.borderRadius = '50%';
-            marker.style.backgroundColor = colors.icon;
-            marker.style.border = '2px solid white';
-            marker.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.2)';
-            marker.style.cursor = 'pointer';
-            marker.style.zIndex = '10';
-            marker.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease';
-            
-            // Create tooltip
-            const tooltip = document.createElement('div');
-            tooltip.className = 'timeline-tooltip';
-            tooltip.style.position = 'absolute';
-            tooltip.style.bottom = '20px';
-            tooltip.style.left = '50%';
-            tooltip.style.transform = 'translateX(-50%)';
-            tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-            tooltip.style.color = 'white';
-            tooltip.style.padding = '4px 8px';
-            tooltip.style.borderRadius = '4px';
-            tooltip.style.fontSize = '10px';
-            tooltip.style.whiteSpace = 'nowrap';
-            tooltip.style.pointerEvents = 'none';
-            tooltip.style.opacity = '0';
-            tooltip.style.transition = 'opacity 0.2s ease';
-            tooltip.textContent = `${entry.type} at ${entry.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
-            
-            // Add hover effects
-            markerContainer.addEventListener('mouseenter', () => {
-                marker.style.transform = 'scale(1.5)';
-                marker.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.3)';
-                tooltip.style.opacity = '1';
-            });
-            
-            markerContainer.addEventListener('mouseleave', () => {
-                marker.style.transform = 'scale(1)';
-                marker.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.2)';
-                tooltip.style.opacity = '0';
-            });
-            
-            // Add click handler to scroll to the corresponding entry
-            markerContainer.addEventListener('click', () => {
-                const entryElement = entry.element;
-                if (entryElement) {
-                    // Ensure the entry is expanded
-                    if (!entryElement.classList.contains('expanded')) {
-                        this.toggleThinkingEntry(entryElement);
-                    }
-                    
-                    // Scroll to the entry
-                    entryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Highlight the entry briefly
-                    entryElement.style.boxShadow = '0 0 0 2px ' + colors.icon;
-                    setTimeout(() => {
-                        entryElement.style.boxShadow = '';
-                    }, 2000);
-                }
-            });
-            
-            markerContainer.appendChild(marker);
-            markerContainer.appendChild(tooltip);
-            this.timelineTrack.appendChild(markerContainer);
-            
-            // Add a connecting line if this isn't the first marker
-            if (index > 0) {
-                const prevPosition = (index - 1) === 0 ? 0 : Math.min((index - 1) * 10, 95);
-                const lineWidth = position - prevPosition;
-                
-                if (lineWidth > 0) {
-                    const line = document.createElement('div');
-                    line.className = 'timeline-connector';
-                    line.style.position = 'absolute';
-                    line.style.height = '2px';
-                    line.style.backgroundColor = '#e5e5e5';
-                    line.style.bottom = '5px';
-                    line.style.left = `${prevPosition}%`;
-                    line.style.width = `${lineWidth}%`;
-                    line.style.zIndex = '5';
-                    
-                    this.timelineTrack.appendChild(line);
-                }
-            }
-            
-            // Store the marker reference in the entry
-            entry.marker = markerContainer;
-        });
     }
 }
 

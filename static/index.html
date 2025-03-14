@@ -6,12 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Motion One Animation Library -->
-    <script src="https://cdn.jsdelivr.net/npm/motion@10.16.2/dist/motion.min.js"></script>
-    <script>
-        // Ensure Motion One is properly exposed to the global scope
-        window.Motion = window.motion || {};
-    </script>
+    <!-- Animation removed for MVP -->
     
     <!-- Syntax Highlighting -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
@@ -191,7 +186,7 @@
                     <button id="settings-button" class="p-2 rounded-full hover:bg-white/10 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            <path d="M19.4 15a1.65 1.65 0 0 1 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                         </svg>
                     </button>
                 </div>
@@ -288,6 +283,16 @@
                     
                     <!-- Quick actions -->
                     <div class="flex flex-wrap gap-2 pt-2">
+                        <button id="test-api-button" class="px-3 py-1.5 text-sm rounded-lg bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-700 transition-colors border border-red-200 shadow-sm">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                Test API Connection
+                            </span>
+                        </button>
                         <button class="quick-action px-3 py-1.5 text-sm rounded-lg bg-gradient-to-r from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 text-primary-700 transition-colors border border-primary-200 shadow-sm">
                             <span class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -320,7 +325,7 @@
                             <span class="flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M3 6h18"></path>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7l-4 4V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                                 </svg>
                                 Clear conversation
                             </span>
@@ -344,11 +349,25 @@
         
         // Initialize the application
         function init() {
+            console.log("Initializing application...");
+            
             // Event listeners
-            sendButton.addEventListener('click', sendMessage);
-            messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
+            console.log("Adding event listener to send button:", sendButton);
+            sendButton.addEventListener('click', function(e) {
+                console.log("Send button clicked!");
+                sendMessage();
             });
+            
+            console.log("Adding event listener to message input:", messageInput);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    console.log("Enter key pressed in message input!");
+                    sendMessage();
+                }
+            });
+            
+            // Test API button
+            document.getElementById('test-api-button').addEventListener('click', testDirectApiCall);
             
             // Quick action buttons
             document.querySelectorAll('.quick-action').forEach(button => {
@@ -359,6 +378,61 @@
             });
             
             updateStatus('disconnected');
+            
+            // Set initial system message
+            appendSystemMessage("Ready to chat. Type a message to begin.");
+            appendSystemMessage("Click 'Test API Connection' to test the backend connection directly.");
+            
+            // Note: We removed the automatic API call on page load
+            // API calls will only happen when the user sends a message
+        }
+        
+        // Test direct API call
+        function testDirectApiCall() {
+            console.log("Starting direct API test call");
+            appendSystemMessage("Testing direct API call...");
+            
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Basic ' + btoa('admin:password')
+                },
+                body: JSON.stringify({
+                    message: "Hello, this is a test message",
+                    session_id: null
+                }),
+                credentials: 'include'
+            })
+            .then(response => {
+                console.log("Direct API call response:", response);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                console.log("Raw response text:", text);
+                try {
+                    const data = JSON.parse(text);
+                    console.log("Direct API call data:", data);
+                    appendSystemMessage(`Direct API call successful: ${JSON.stringify(data)}`);
+                    updateStatus('connected');
+                    
+                    // Try to connect to EventSource with the session ID
+                    if (data.session_id) {
+                        connectEventSource(data.session_id);
+                    }
+                } catch (e) {
+                    console.error("JSON parse error:", e);
+                    appendSystemMessage(`Error parsing JSON: ${e.message}`);
+                }
+            })
+            .catch(error => {
+                console.error("Direct API call error:", error);
+                appendSystemMessage(`Direct API call error: ${error.message}`);
+                updateStatus('error');
+            });
         }
         
         // Update status indicator
@@ -383,97 +457,196 @@
         }
         
         // Connect to Server-Sent Events
-        function connectEventSource() {
+        function connectEventSource(sessionId) {
+            console.log("connectEventSource called with sessionId:", sessionId);
+            if (!sessionId) {
+                console.error("Cannot connect EventSource: No session ID provided");
+                appendSystemMessage("Error: No valid session ID available. Please try again.");
+                updateStatus('error');
+                return;
+            }
+            
             if (eventSource) {
+                console.log("Closing existing EventSource connection");
                 eventSource.close();
                 eventSource = null;
             }
             
-            const url = `/api/stream`;
-            eventSource = new EventSource(url);
-            
-            eventSource.onopen = () => {
-                appendSystemMessage("Connected to server");
-                updateStatus('connected');
-            };
-            
-            eventSource.onmessage = (event) => {
-                const data = JSON.parse(event.data);
+            try {
+                // Try to connect to the API endpoint with the session ID
+                let url = `/api/stream/${sessionId}`;
+                console.log("Connecting to SSE endpoint:", url);
                 
-                if (data.type === 'connection_established') {
-                    sessionId = data.session_id;
-                    appendSystemMessage(`Session established: ${sessionId}`);
-                } 
-                else if (data.type === 'message') {
-                    appendAssistantMessage(data.content);
+                // Add a timestamp to the URL to prevent caching
+                // Also add auth credentials directly in the URL for EventSource
+                const authCredentials = btoa('admin:password');
+                const timestampedUrl = `${url}?t=${Date.now()}&auth=${authCredentials}`;
+                console.log("Using URL with timestamp and auth:", timestampedUrl);
+                
+                // Create the EventSource with credentials
+                eventSource = new EventSource(timestampedUrl, { 
+                    withCredentials: true 
+                });
+                
+                console.log("EventSource created:", eventSource);
+                
+                eventSource.onopen = (event) => {
+                    console.log("SSE connection opened", event);
                     updateStatus('connected');
-                    clearThinkingProcess();
+                };
+                
+                eventSource.onmessage = (event) => {
+                    console.log("SSE message received:", event.data);
+                    
+                    try {
+                        const data = JSON.parse(event.data);
+                        console.log("Parsed SSE data:", data);
+                        
+                        if (data.type === 'connection_established') {
+                            sessionId = data.session_id;
+                            appendSystemMessage(`Session established: ${sessionId}`);
+                        } 
+                        else if (data.type === 'message') {
+                            appendAssistantMessage(data.content);
+                            updateStatus('connected');
+                            clearThinkingProcess();
+                            eventSource.close();
+                            eventSource = null;
+                        }
+                        else if (data.type === 'error') {
+                            appendSystemMessage(`Error: ${data.content}`);
+                            updateStatus('error');
+                        }
+                        else if (data.type === 'status') {
+                            if (data.content === 'thinking') {
+                                updateStatus('thinking');
+                                clearThinkingProcess();
+                            }
+                        }
+                        else if (data.type === 'log') {
+                            appendThinkingLog(data.content);
+                        }
+                        else if (data.type === 'history') {
+                            data.messages.forEach(msg => {
+                                if (msg.role === 'user') {
+                                    appendUserMessage(msg.content);
+                                } else if (msg.role === 'assistant') {
+                                    appendAssistantMessage(msg.content);
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error parsing SSE data:", e);
+                        appendSystemMessage(`Error parsing SSE data: ${e.message}`);
+                    }
+                };
+                
+                eventSource.onerror = (error) => {
+                    console.error("SSE connection error:", error);
+                    updateStatus('error');
                     eventSource.close();
                     eventSource = null;
-                }
-                else if (data.type === 'error') {
-                    appendSystemMessage(`Error: ${data.content}`);
+                };
+            } catch (error) {
+                console.error("Error creating EventSource:", error);
+                appendSystemMessage(`Error connecting to server: ${error.message}`);
+                updateStatus('error');
+            }
+
+            // Check connection status after a timeout
+            setTimeout(() => {
+                if (statusText.textContent === "Disconnected") {
+                    console.log("EventSource connection failed");
+                    appendSystemMessage("Could not connect to server. Please try sending a message.");
                     updateStatus('error');
                 }
-                else if (data.type === 'status') {
-                    if (data.content === 'thinking') {
-                        updateStatus('thinking');
-                        clearThinkingProcess();
-                    }
-                }
-                else if (data.type === 'log') {
-                    appendThinkingLog(data.content);
-                }
-                else if (data.type === 'history') {
-                    data.messages.forEach(msg => {
-                        if (msg.role === 'user') {
-                            appendUserMessage(msg.content);
-                        } else if (msg.role === 'assistant') {
-                            appendAssistantMessage(msg.content);
-                        }
-                    });
-                }
-            };
-            
-            eventSource.onerror = (error) => {
-                updateStatus('error');
-                eventSource.close();
-                eventSource = null;
-            };
+            }, 5000);
         }
         
         // Send message
         async function sendMessage() {
+            console.log("sendMessage function called!");
             const message = messageInput.value.trim();
-            if (!message) return;
+            console.log("Message content:", message);
+            if (!message) {
+                console.log("Message is empty, returning");
+                return;
+            }
             
+            console.log("Proceeding with message:", message);
             appendUserMessage(message);
+            messageInput.value = '';
             updateStatus('thinking');
             
             try {
-                connectEventSource();
+                // First send the message via fetch request
+                console.log("Sending message to backend...");
                 
                 const requestBody = {
                     message: message,
-                    session_id: sessionId
+                    session_id: sessionId,
+                    params: {
+                        use_enhanced_react: true
+                    }
                 };
+                
+                console.log("Request body:", JSON.stringify(requestBody));
+                console.log("Current session ID:", sessionId);
+                
+                // Add detailed debugging before fetch
+                console.log("About to send fetch request to /api/chat with these headers:", {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Basic ' + btoa('admin:password')
+                });
                 
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Basic ' + btoa('admin:password')
                     },
-                    body: JSON.stringify(requestBody)
+                    body: JSON.stringify(requestBody),
+                    credentials: 'include'
                 });
                 
+                console.log("Fetch request completed with status:", response.status);
+                console.log("Response headers:", Object.fromEntries([...response.headers]));
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 
-                const data = await response.json();
-                sessionId = data.session_id;
-            } catch (error) {
-                appendSystemMessage(`Error: ${error.message}`);
+                const responseText = await response.text();
+                console.log("Raw response text:", responseText);
+                
+                // Try to parse the response
+                try {
+                    const data = JSON.parse(responseText);
+                    console.log("Response data:", data);
+                    
+                    // Get session ID directly from the response
+                    const responseSessionId = data.session_id;
+                    console.log("Got session ID from response:", responseSessionId);
+                    
+                    if (!responseSessionId) {
+                        throw new Error('No session ID in response');
+                    }
+                    
+                    // Update global session ID variable
+                    sessionId = responseSessionId;
+                    
+                    // Now that we have a valid session ID, connect to EventSource
+                    console.log("Connecting to EventSource with session ID:", responseSessionId);
+                    connectEventSource(responseSessionId);
+                } catch (jsonError) {
+                    console.error("JSON parse error:", jsonError);
+                    console.error("Response was not valid JSON:", responseText);
+                    appendSystemMessage(`Error: Could not parse server response. Please try again.`);
+                    updateStatus('error');
+                }
+            } catch (fetchError) {
+                console.error("Fetch error details:", fetchError);
+                appendSystemMessage(`Error: Could not send message to server. ${fetchError.message}`);
                 updateStatus('error');
                 
                 if (eventSource) {
@@ -481,8 +654,6 @@
                     eventSource = null;
                 }
             }
-            
-            messageInput.value = '';
         }
         
         // Append user message
@@ -651,9 +822,47 @@
     <script src="/static/js/react-agent.js"></script>
     <!-- Thinking Process Visualization -->
     <script src="/static/js/thinking-process.js"></script>
-    <!-- Motion One Animations -->
-    <script src="/static/js/animations.js"></script>
     <!-- Advanced Command Palette -->
     <script src="/static/js/command-palette.js"></script>
+    
+    <!-- Core functionality that was provided by animations.js -->
+    <script>
+        // Simple function to handle status updates without animations
+        window.updateStatus = function(status) {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const statusProgress = document.getElementById('agent-status-progress');
+            
+            switch(status) {
+                case 'connected':
+                    statusDot.className = 'h-3 w-3 rounded-full bg-accent-success mr-2';
+                    statusText.textContent = 'Connected';
+                    statusProgress.style.width = '100%';
+                    
+                    // Reset progress bar after a delay
+                    setTimeout(() => {
+                        statusProgress.style.width = '0%';
+                    }, 1000);
+                    break;
+                    
+                case 'thinking':
+                    statusDot.className = 'h-3 w-3 rounded-full bg-accent-amber mr-2';
+                    statusText.textContent = 'Agent Thinking';
+                    statusProgress.style.width = '90%'; // Show progress
+                    break;
+                    
+                case 'error':
+                    statusDot.className = 'h-3 w-3 rounded-full bg-accent-error mr-2';
+                    statusText.textContent = 'Connection Error';
+                    statusProgress.style.width = '0%';
+                    break;
+                    
+                default: // disconnected
+                    statusDot.className = 'h-3 w-3 rounded-full bg-neutral-300 mr-2';
+                    statusText.textContent = 'Disconnected';
+                    statusProgress.style.width = '0%';
+            }
+        };
+    </script>
 </body>
 </html>

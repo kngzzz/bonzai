@@ -133,3 +133,10 @@ class Memory(BaseModel):
     def to_dict_list(self) -> List[dict]:
         """Convert messages to list of dicts"""
         return [msg.to_dict() for msg in self.messages]
+        
+    def get_last_user_message(self) -> Optional[str]:
+        """Get the content of the last user message"""
+        for msg in reversed(self.messages):
+            if msg.role == "user" and msg.content is not None:
+                return msg.content
+        return None
