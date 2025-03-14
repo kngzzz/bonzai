@@ -1,0 +1,191 @@
+# Cline Rules: ReAct Agent Backend
+
+## Project Patterns
+
+### Naming Conventions
+
+1. **Class Names**
+   - Agent classes use descriptive names (e.g., `Manus`, `Planning`)
+   - Tool classes use action-oriented names (e.g., `BashTool`, `FileOperationTool`)
+   - Flow classes use purpose-oriented names (e.g., `PlanningFlow`)
+
+2. **File Organization**
+   - Module-based organization (agent, flow, tool, prompt)
+   - Implementation files match class names (e.g., `manus.py` for `Manus` class)
+   - Base classes in `base.py` within each module
+
+3. **Variable Naming**
+   - Snake case for variables and functions (`session_manager`, `get_or_create_session`)
+   - Camel case for class names (`SessionManager`, `BaseAgent`)
+   - Constants in uppercase (`AUTH_USERNAME`, `API_KEY`)
+
+### Code Structure
+
+1. **Class Hierarchy**
+   - Abstract base classes define interfaces
+   - Concrete implementations extend base classes
+   - Pydantic models used for data validation
+
+2. **Asynchronous Patterns**
+   - Async/await used throughout for non-blocking operations
+   - Context managers for state transitions
+   - Task creation for background operations
+
+3. **Error Handling**
+   - Custom exceptions for domain-specific errors
+   - Try/except blocks with specific exception types
+   - Graceful degradation with fallback responses
+
+### API Design
+
+1. **Endpoint Structure**
+   - REST endpoints under `/api/` prefix
+   - WebSocket endpoints under `/ws/` prefix
+   - Resource-oriented URL structure
+
+2. **Request/Response Format**
+   - JSON for request and response bodies
+   - Pydantic models for validation
+   - Consistent error response format
+
+3. **Authentication**
+   - HTTP Basic Auth for all protected endpoints
+   - Environment variables for credentials
+   - Secure comparison for password verification
+
+## Critical Implementation Paths
+
+### Session Management Flow
+
+1. Client connects with optional session_id
+2. `session_manager.get_or_create_session()` retrieves or creates session
+3. Session contains agent instances and flow
+4. Messages are processed through the flow
+5. Results are returned to the client
+6. Background task periodically cleans up inactive sessions
+
+### Agent Execution Pattern
+
+1. Agent receives user message via flow
+2. Message is added to agent's memory
+3. Agent executes steps until completion or max steps reached
+4. Each step may involve LLM calls or tool usage
+5. Results are collected and returned
+6. Agent state is managed through context managers
+
+### Tool Safety Implementation
+
+1. Environment determines safety level (development vs. production)
+2. Tool Manager wraps agent tools with safety constraints
+3. Restricted operations are blocked in production
+4. Safe alternatives are provided when possible
+5. Errors are logged and reported
+
+## Known Challenges
+
+### Session Persistence
+
+- **Challenge**: Sessions are stored in memory
+- **Impact**: Sessions lost on server restart
+- **Workaround**: Short session timeouts and graceful handling of session recreation
+- **Future Solution**: Implement database-backed session storage
+
+### Concurrent Session Management
+
+- **Challenge**: Managing many concurrent sessions
+- **Impact**: Potential resource exhaustion
+- **Mitigation**: Session timeout and cleanup
+- **Consideration**: Monitor memory usage in production
+
+### LLM API Reliability
+
+- **Challenge**: Anthropic API may have rate limits or downtime
+- **Impact**: Agent execution delays or failures
+- **Mitigation**: Retry logic with exponential backoff
+- **Fallback**: Graceful error messages to users
+
+### WebSocket Connection Stability
+
+- **Challenge**: Maintaining stable WebSocket connections
+- **Impact**: Interrupted streaming responses
+- **Mitigation**: Reconnection logic on client side
+- **Consideration**: Implement heartbeat mechanism
+
+## User Preferences
+
+### Development Workflow
+
+- Use convenience scripts for local development
+- Set up `.env` file for local configuration
+- Run in development mode for debugging
+- Use production mode for deployment testing
+
+### Deployment Preferences
+
+- Heroku for quick deployments
+- Vercel for frontend-integrated deployments
+- Environment variables for configuration
+- Minimal dependencies for faster deployments
+
+### Tool Usage Patterns
+
+- Restrict dangerous tools in production
+- Provide safe alternatives when possible
+- Log tool usage for auditing
+- Apply consistent safety patterns across tools
+
+## Evolution of Project Decisions
+
+### Authentication Approach
+
+- **Initial**: Simple HTTP Basic Auth
+- **Rationale**: Quick implementation for internal use
+- **Future Consideration**: More robust auth for public-facing deployments
+
+### Session Management
+
+- **Initial**: In-memory session storage
+- **Rationale**: Simplicity and performance
+- **Future Consideration**: Database-backed persistence for reliability
+
+### Tool Safety
+
+- **Initial**: Environment-based restrictions
+- **Rationale**: Balance between flexibility and safety
+- **Future Consideration**: More granular permissions and sandboxing
+
+### API Design
+
+- **Initial**: Simple REST and WebSocket endpoints
+- **Rationale**: Standard patterns for easy integration
+- **Future Consideration**: GraphQL for more flexible queries
+
+## Project-Specific Insights
+
+### Agent Capabilities
+
+- Manus: General-purpose agent with broad capabilities
+- Planning: Structured planning and reasoning
+- React: Reasoning and acting pattern
+- SWE: Software engineering tasks
+- Toolcall: Tool-focused interactions
+
+### Flow Patterns
+
+- Planning Flow: Structured approach to planning tasks
+- Flow Factory: Creates appropriate flows based on type
+- Flow execution manages the overall interaction
+
+### Tool Categories
+
+- System Tools: Bash, Terminal, Python execution
+- Web Tools: Browser, Google Search
+- File Tools: File operations, editing
+- LLM Tools: Chat completion, reasoning
+
+### Environment Configuration
+
+- Development: Fewer restrictions, more debugging
+- Production: Stricter safety controls, performance focus
+- Configuration via environment variables
+- Different behavior based on ENVIRONMENT setting

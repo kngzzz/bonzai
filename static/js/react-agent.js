@@ -12,10 +12,19 @@ class ReActAgentUI {
         this.thinkingProcess = document.getElementById('thinking-process');
         this.quickActions = document.querySelectorAll('.quick-action');
         this.settingsButton = document.getElementById('settings-button');
+        this.statusBar = document.getElementById('agent-status-bar');
+        this.statusProgress = document.getElementById('agent-status-progress');
+        this.commandHistoryIndicator = document.getElementById('command-history-indicator');
+        this.historyCount = document.getElementById('history-count');
         
         // Command history
         this.commandHistory = [];
         this.historyIndex = -1;
+        
+        // Status tracking
+        this.processingState = 'idle'; // idle, thinking, responding
+        this.processingProgress = 0;
+        this.processingInterval = null;
         
         // Command suggestions
         this.suggestions = [
@@ -383,7 +392,147 @@ class ReActAgentUI {
     }
 }
 
+// Add methods for status visualization and command history
+ReActAgentUI.prototype.updateStatusVisualization = function(status) {
+    // Clear any existing interval
+    if (this.processingInterval) {
+        clearInterval(this.processingInterval);
+        this.processingInterval = null;
+    }
+    
+    // Update status bar based on status
+    switch(status) {
+        case 'thinking':
+            this.processingState = 'thinking';
+            this.processingProgress = 0;
+            this.statusProgress.style.width = '0%';
+            this.statusProgress.style.backgroundColor = '';
+            this.statusProgress.classList.add('bg-gradient-to-r', 'from-primary-500', 'to-secondary-500');
+            
+            // Animate progress
+            this.processingInterval = setInterval(() => {
+                // Increment progress, but slow down as it approaches 90%
+                if (this.processingProgress < 90) {
+                    this.processingProgress += (90 - this.processingProgress) * 0.01;
+                }
+                this.statusProgress.style.width = `${this.processingProgress}%`;
+            }, 100);
+            break;
+            
+        case 'connected':
+            this.processingState = 'idle';
+            this.processingProgress = 100;
+            this.statusProgress.style.width = '100%';
+            this.statusProgress.classList.remove('bg-gradient-to-r', 'from-primary-500', 'to-secondary-500');
+            this.statusProgress.style.backgroundColor = '#10b981'; // accent-success
+            
+            // Reset after a delay
+            setTimeout(() => {
+                if (this.processingState === 'idle') {
+                    this.statusProgress.style.width = '0%';
+                }
+            }, 1500);
+            break;
+            
+        case 'error':
+            this.processingState = 'error';
+            this.processingProgress = 100;
+            this.statusProgress.style.width = '100%';
+            this.statusProgress.classList.remove('bg-gradient-to-r', 'from-primary-500', 'to-secondary-500');
+            this.statusProgress.style.backgroundColor = '#ef4444'; // accent-error
+            break;
+            
+        default:
+            this.processingState = 'idle';
+            this.processingProgress = 0;
+            this.statusProgress.style.width = '0%';
+    }
+};
+
+ReActAgentUI.prototype.updateCommandHistoryIndicator = function() {
+    if (this.commandHistory.length > 0) {
+        this.commandHistoryIndicator.classList.remove('hidden');
+        this.historyCount.textContent = this.commandHistory.length;
+    } else {
+        this.commandHistoryIndicator.classList.add('hidden');
+    }
+};
+
+// Override the original navigateCommandHistory method to update the indicator
+const originalNavigateCommandHistory = ReActAgentUI.prototype.navigateCommandHistory;
+ReActAgentUI.prototype.navigateCommandHistory = function(direction) {
+    originalNavigateCommandHistory.call(this, direction);
+    
+    // Highlight the history indicator when navigating
+    if (this.historyIndex >= 0) {
+        this.commandHistoryIndicator.classList.add('bg-secondary-100', 'text-secondary-700');
+        this.commandHistoryIndicator.classList.remove('bg-neutral-100', 'text-neutral-600');
+    } else {
+        this.commandHistoryIndicator.classList.remove('bg-secondary-100', 'text-secondary-700');
+        this.commandHistoryIndicator.classList.add('bg-neutral-100', 'text-neutral-600');
+    }
+};
+
+// Override the original setupCommandHistory method to update the indicator
+const originalSetupCommandHistory = ReActAgentUI.prototype.setupCommandHistory;
+ReActAgentUI.prototype.setupCommandHistory = function() {
+    originalSetupCommandHistory.call(this);
+    
+    // Add click handler for history indicator
+    this.commandHistoryIndicator.addEventListener('click', () => {
+        if (this.commandHistory.length > 0) {
+            // Create and show history dropdown
+            const historyDropdown = document.createElement('div');
+            historyDropdown.className = 'absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-neutral-200 max-h-48 overflow-y-auto z-10';
+            
+            // Add history items
+            historyDropdown.innerHTML = this.commandHistory.map((cmd, index) => `
+                <div class="history-item p-2 hover:bg-neutral-100 cursor-pointer text-sm ${index === this.historyIndex ? 'bg-secondary-50' : ''}">
+                    ${cmd}
+                </div>
+            `).join('');
+            
+            // Add to DOM
+            this.messageInput.parentNode.appendChild(historyDropdown);
+            
+            // Handle item selection
+            historyDropdown.addEventListener('click', (e) => {
+                const item = e.target.closest('.history-item');
+                if (item) {
+                    const index = Array.from(historyDropdown.children).indexOf(item);
+                    this.messageInput.value = this.commandHistory[index];
+                    this.messageInput.focus();
+                    historyDropdown.remove();
+                }
+            });
+            
+            // Close on outside click
+            document.addEventListener('click', function closeHistory(e) {
+                if (!historyDropdown.contains(e.target) && e.target !== this.commandHistoryIndicator) {
+                    historyDropdown.remove();
+                    document.removeEventListener('click', closeHistory);
+                }
+            }.bind(this));
+        }
+    });
+    
+    // Update indicator on page load
+    this.updateCommandHistoryIndicator();
+};
+
+// Hook into the global updateStatus function to update our visualization
+const originalUpdateStatus = window.updateStatus;
+window.updateStatus = function(status) {
+    // Call the original function
+    originalUpdateStatus(status);
+    
+    // Update our visualization
+    if (window.reactAgentUI) {
+        window.reactAgentUI.updateStatusVisualization(status);
+    }
+};
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new ReActAgentUI();
+    window.reactAgentUI = new ReActAgentUI();
 });

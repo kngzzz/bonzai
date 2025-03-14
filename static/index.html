@@ -6,13 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Prism.js for syntax highlighting -->
+    <!-- Motion One Animation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/motion@10.16.2/dist/motion.min.js"></script>
+    <script>
+        // Ensure Motion One is properly exposed to the global scope
+        window.Motion = window.motion || {};
+    </script>
+    
+    <!-- Syntax Highlighting -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-jsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
     <!-- Custom markdown parser -->
     <script src="/static/js/markdown-lite.js"></script>
     <!-- Custom CSS -->
@@ -234,7 +248,12 @@
         <!-- Command input area -->
         <footer class="bg-white border-t border-neutral-200 p-4 md:p-6">
             <div class="container mx-auto">
-                <div class="flex flex-col space-y-2">
+                <div class="flex flex-col space-y-3">
+                    <!-- Status visualization -->
+                    <div id="agent-status-bar" class="w-full h-1 bg-neutral-100 rounded-full overflow-hidden">
+                        <div id="agent-status-progress" class="h-full w-0 bg-gradient-to-r from-primary-500 to-secondary-500 transition-all duration-300"></div>
+                    </div>
+                    
                     <!-- Command palette -->
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -245,33 +264,66 @@
                         <input 
                             type="text" 
                             id="message-input" 
-                            class="block w-full pl-10 pr-12 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-secondary-300 focus:border-secondary-500 transition-all bg-white shadow-sm"
+                            class="block w-full pl-10 pr-12 py-3.5 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-secondary-300 focus:border-secondary-500 transition-all bg-white shadow-sm"
                             placeholder="Type your command or question..."
                         >
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                            <div class="text-xs text-neutral-400 mr-2 hidden md:block">Press Enter to send</div>
-                            <button id="send-button" class="p-1 rounded-md bg-secondary-500 text-white hover:bg-secondary-600 transition-colors">
+                            <div id="command-history-indicator" class="text-xs bg-neutral-100 text-neutral-600 px-2 py-1 rounded mr-2 hidden">
+                                <span id="history-count">0</span> commands
+                            </div>
+                            <button id="send-button" class="p-2 rounded-lg bg-secondary-500 text-white hover:bg-secondary-600 transition-colors shadow-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <line x1="22" y1="2" x2="11" y2="13"></line>
                                     <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                                 </svg>
                             </button>
                         </div>
+                        
+                        <!-- Keyboard shortcuts hint -->
+                        <div class="absolute -bottom-6 right-0 text-xs text-neutral-400 flex items-center">
+                            <span class="mr-3">↑↓ Navigate history</span>
+                            <span>Enter to send</span>
+                        </div>
                     </div>
                     
                     <!-- Quick actions -->
-                    <div class="flex flex-wrap gap-2">
-                        <button class="quick-action px-3 py-1 text-sm rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors">
-                            Help me with...
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        <button class="quick-action px-3 py-1.5 text-sm rounded-lg bg-gradient-to-r from-primary-50 to-primary-100 hover:from-primary-100 hover:to-primary-200 text-primary-700 transition-colors border border-primary-200 shadow-sm">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                Help me with...
+                            </span>
                         </button>
-                        <button class="quick-action px-3 py-1 text-sm rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors">
-                            Explain your process
+                        <button class="quick-action px-3 py-1.5 text-sm rounded-lg bg-gradient-to-r from-secondary-50 to-secondary-100 hover:from-secondary-100 hover:to-secondary-200 text-secondary-700 transition-colors border border-secondary-200 shadow-sm">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="4 17 10 11 4 5"></polyline>
+                                    <line x1="12" y1="19" x2="20" y2="19"></line>
+                                </svg>
+                                Explain your process
+                            </span>
                         </button>
-                        <button class="quick-action px-3 py-1 text-sm rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors">
-                            Pause agent
+                        <button class="quick-action px-3 py-1.5 text-sm rounded-lg bg-gradient-to-r from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 text-amber-700 transition-colors border border-amber-200 shadow-sm">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="6" y="4" width="4" height="16"></rect>
+                                    <rect x="14" y="4" width="4" height="16"></rect>
+                                </svg>
+                                Pause agent
+                            </span>
                         </button>
-                        <button class="quick-action px-3 py-1 text-sm rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors">
-                            Clear conversation
+                        <button class="quick-action px-3 py-1.5 text-sm rounded-lg bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-700 transition-colors border border-red-200 shadow-sm">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 6h18"></path>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                                Clear conversation
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -436,28 +488,62 @@
         // Append user message
         function appendUserMessage(message) {
             const div = document.createElement('div');
-            div.className = 'message user-message fade-in ml-auto max-w-[70%] bg-primary-100 text-primary-900 p-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg shadow-sm';
+            div.className = 'message user-message fade-in ml-auto max-w-[70%] bg-gradient-to-br from-primary-50 to-primary-100 text-primary-900 p-4 rounded-2xl rounded-tr-sm shadow-md border border-primary-200';
             
             const header = document.createElement('div');
-            header.className = 'flex justify-between items-center mb-1';
+            header.className = 'flex justify-between items-center mb-2';
+            
+            const roleContainer = document.createElement('div');
+            roleContainer.className = 'flex items-center';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'w-6 h-6 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs font-bold mr-2';
+            avatar.textContent = 'U';
             
             const role = document.createElement('span');
-            role.className = 'text-xs font-semibold text-primary-600';
+            role.className = 'text-xs font-semibold text-primary-700';
             role.textContent = 'You';
+            
+            roleContainer.appendChild(avatar);
+            roleContainer.appendChild(role);
+            
+            const metaContainer = document.createElement('div');
+            metaContainer.className = 'flex items-center space-x-2';
             
             const time = document.createElement('span');
             time.className = 'text-xs text-neutral-500';
             time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
-            header.appendChild(role);
-            header.appendChild(time);
+            metaContainer.appendChild(time);
+            
+            header.appendChild(roleContainer);
+            header.appendChild(metaContainer);
             
             const content = document.createElement('div');
             content.className = 'text-sm message-content';
             content.textContent = message;
             
-            div.appendChild(header);
-            div.appendChild(content);
+            // Add expand/collapse for long messages
+            if (message.length > 300) {
+                div.classList.add('expandable-message');
+                content.classList.add('truncated');
+                
+                const expandButton = document.createElement('button');
+                expandButton.className = 'text-xs text-primary-600 hover:text-primary-800 mt-2 font-medium';
+                expandButton.textContent = 'Show more';
+                expandButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    content.classList.toggle('truncated');
+                    expandButton.textContent = content.classList.contains('truncated') ? 'Show more' : 'Show less';
+                });
+                
+                div.appendChild(header);
+                div.appendChild(content);
+                div.appendChild(expandButton);
+            } else {
+                div.appendChild(header);
+                div.appendChild(content);
+            }
             
             messagesDiv.appendChild(div);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -466,21 +552,41 @@
         // Append assistant message
         function appendAssistantMessage(message) {
             const div = document.createElement('div');
-            div.className = 'message assistant-message fade-in mr-auto max-w-[70%] bg-secondary-100 text-neutral-800 p-3 rounded-tl-lg rounded-tr-lg rounded-br-lg shadow-sm';
+            div.className = 'message assistant-message fade-in mr-auto max-w-[70%] bg-gradient-to-br from-secondary-50 to-secondary-100 text-neutral-800 p-4 rounded-2xl rounded-tl-sm shadow-md border border-secondary-200';
             
             const header = document.createElement('div');
-            header.className = 'flex justify-between items-center mb-1';
+            header.className = 'flex justify-between items-center mb-2';
+            
+            const roleContainer = document.createElement('div');
+            roleContainer.className = 'flex items-center';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'w-6 h-6 rounded-full bg-secondary-500 text-white flex items-center justify-center text-xs font-bold mr-2';
+            avatar.textContent = 'A';
             
             const role = document.createElement('span');
-            role.className = 'text-xs font-semibold text-secondary-600';
+            role.className = 'text-xs font-semibold text-secondary-700';
             role.textContent = 'Agent';
+            
+            roleContainer.appendChild(avatar);
+            roleContainer.appendChild(role);
+            
+            const metaContainer = document.createElement('div');
+            metaContainer.className = 'flex items-center space-x-2';
             
             const time = document.createElement('span');
             time.className = 'text-xs text-neutral-500';
             time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
-            header.appendChild(role);
-            header.appendChild(time);
+            const processingTime = document.createElement('span');
+            processingTime.className = 'text-xs px-1.5 py-0.5 rounded-full bg-neutral-100 text-neutral-600';
+            processingTime.textContent = `${Math.floor(Math.random() * 5) + 1}s`;
+            
+            metaContainer.appendChild(time);
+            metaContainer.appendChild(processingTime);
+            
+            header.appendChild(roleContainer);
+            header.appendChild(metaContainer);
             
             const content = document.createElement('div');
             content.className = 'text-sm message-content';
@@ -488,8 +594,27 @@
             // Parse markdown in the message
             content.innerHTML = MarkdownLite.parse(message);
             
-            div.appendChild(header);
-            div.appendChild(content);
+            // Add expand/collapse for long messages
+            if (message.length > 500) {
+                div.classList.add('expandable-message');
+                content.classList.add('truncated');
+                
+                const expandButton = document.createElement('button');
+                expandButton.className = 'text-xs text-secondary-600 hover:text-secondary-800 mt-2 font-medium';
+                expandButton.textContent = 'Show more';
+                expandButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    content.classList.toggle('truncated');
+                    expandButton.textContent = content.classList.contains('truncated') ? 'Show more' : 'Show less';
+                });
+                
+                div.appendChild(header);
+                div.appendChild(content);
+                div.appendChild(expandButton);
+            } else {
+                div.appendChild(header);
+                div.appendChild(content);
+            }
             
             messagesDiv.appendChild(div);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -526,5 +651,9 @@
     <script src="/static/js/react-agent.js"></script>
     <!-- Thinking Process Visualization -->
     <script src="/static/js/thinking-process.js"></script>
+    <!-- Motion One Animations -->
+    <script src="/static/js/animations.js"></script>
+    <!-- Advanced Command Palette -->
+    <script src="/static/js/command-palette.js"></script>
 </body>
 </html>
